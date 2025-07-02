@@ -5,6 +5,10 @@ import TimeZoneConverter from '../components/TimeZoneConverter';
 import SettingsPanel from '../components/SettingsPanel';
 import WorldMap from '../components/WorldMap';
 import { TIMEZONE_SUGGESTIONS } from '../data/timezones';
+import TimeTravelSlider from '../components/TimeTravelSlider';
+import NotificationManager from '../components/NotificationManager';
+import InteractiveGlobe from '../components/InteractiveGlobe';
+import { useOfflineSupport } from '../hooks/useOfflineSupport';
 
 interface Location {
   name: string;
@@ -26,6 +30,11 @@ const Index = () => {
   const [showWeather, setShowWeather] = useState(true);
   const [showConverter, setShowConverter] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [showTimeTravel, setShowTimeTravel] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showGlobe, setShowGlobe] = useState(false);
+  
+  const { isOnline, cacheTimes, getCachedTime } = useOfflineSupport();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -43,6 +52,13 @@ const Index = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  // Cache times when online
+  useEffect(() => {
+    if (isOnline) {
+      cacheTimes(locations);
+    }
+  }, [locations, isOnline, cacheTimes]);
 
   const handleAddLocation = (location: string) => {
     const cityData = TIMEZONE_SUGGESTIONS.find(item => item.city === location);
@@ -92,6 +108,13 @@ const Index = () => {
         <h1 className="text-2xl font-medium text-center mb-1">WORLD TIME WINDOWS</h1>
         <p className="text-sm text-gray-600 text-center mb-8">made by <a href="https://x.com/sb_creations" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900">@sb_creations</a></p>
         
+        {/* Offline indicator */}
+        {!isOnline && (
+          <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg text-center">
+            📱 You're offline. Showing cached times.
+          </div>
+        )}
+        
         <SettingsPanel
           is24Hour={is24Hour}
           onToggle24Hour={setIs24Hour}
@@ -101,7 +124,7 @@ const Index = () => {
           onToggleWeather={setShowWeather}
         />
 
-        <div className="flex justify-center gap-4 mb-6">
+        <div className="flex justify-center gap-2 mb-6 flex-wrap">
           <button
             onClick={() => setShowConverter(!showConverter)}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -114,6 +137,27 @@ const Index = () => {
             className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
           >
             {showMap ? 'Hide' : 'Show'} World Map
+          </button>
+
+          <button
+            onClick={() => setShowGlobe(!showGlobe)}
+            className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors"
+          >
+            {showGlobe ? 'Hide' : 'Show'} Interactive Globe
+          </button>
+
+          <button
+            onClick={() => setShowTimeTravel(!showTimeTravel)}
+            className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+          >
+            {showTimeTravel ? 'Hide' : 'Show'} Time Travel
+          </button>
+
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
+          >
+            {showNotifications ? 'Hide' : 'Show'} Notifications
           </button>
         </div>
 
@@ -129,6 +173,31 @@ const Index = () => {
             isDarkMode={isDarkMode}
           />
         )}
+
+        {showGlobe && (
+          <InteractiveGlobe
+            locations={locations}
+            currentTime={currentTime}
+            is24Hour={is24Hour}
+            isDarkMode={isDarkMode}
+            onAddLocation={handleAddLocation}
+          />
+        )}
+
+        {showTimeTravel && (
+          <TimeTravelSlider
+            locations={locations}
+            is24Hour={is24Hour}
+            isDarkMode={isDarkMode}
+          />
+        )}
+
+        {showNotifications && (
+          <NotificationManager
+            locations={locations}
+            isDarkMode={isDarkMode}
+          />
+        )}
         
         <TimeZoneSearch onAddLocation={handleAddLocation} />
         
@@ -139,7 +208,7 @@ const Index = () => {
               location={location.customName || location.name}
               originalLocation={location.name}
               timeZone={location.timeZone}
-              currentTime={currentTime}
+              currentTime={isOnline ? currentTime : getCachedTime(location.name)}
               is24Hour={is24Hour}
               isDarkMode={isDarkMode}
               showWeather={showWeather}
