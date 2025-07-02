@@ -1,26 +1,28 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { Cloud, Sun, Moon } from 'lucide-react';
 import { isNightTime, getSkyGradient, getSunMoonPosition } from '../utils/timeUtils';
 
 interface SkyBackgroundProps {
   timeString: string;
+  isDarkMode?: boolean;
 }
 
 interface CloudPosition {
-  left: number;  // Changed from string to number for easier calculations
-  top: number;   // Changed from string to number
+  left: number;
+  top: number;
   speed: number;
-  direction: number; // 1 for right, -1 for left
+  direction: number;
 }
 
-const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString }) => {
+const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString, isDarkMode = false }) => {
   const [cloudPositions, setCloudPositions] = useState<CloudPosition[]>(() => {
-    const numClouds = Math.floor(Math.random() * 3) + 2; // 2-4 clouds
+    const numClouds = Math.floor(Math.random() * 3) + 2;
     return Array(numClouds).fill(null).map(() => ({
-      left: Math.random() * 100,  // Position as number
-      top: Math.random() * 40 + 20, // Position as number
+      left: Math.random() * 100,
+      top: Math.random() * 40 + 20,
       speed: (Math.random() * 0.05) + 0.02,
-      direction: -1 // Start moving left
+      direction: -1
     }));
   });
 
@@ -30,13 +32,12 @@ const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString }) => {
         let newLeft = cloud.left + (cloud.speed * cloud.direction);
         let newDirection = cloud.direction;
 
-        // Bounce at edges
         if (newLeft <= -20) {
           newLeft = -20;
-          newDirection = 1;  // Change direction to right
+          newDirection = 1;
         } else if (newLeft >= 120) {
           newLeft = 120;
-          newDirection = -1; // Change direction to left
+          newDirection = -1;
         }
 
         return {
@@ -49,12 +50,12 @@ const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString }) => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(updateCloudPositions, 16); // 60fps for smooth animation
+    const interval = setInterval(updateCloudPositions, 16);
     return () => clearInterval(interval);
   }, [updateCloudPositions]);
 
   return (
-    <div className={`relative w-full aspect-square ${getSkyGradient(timeString)} overflow-hidden`}>
+    <div className={`relative w-full aspect-square ${getSkyGradient(timeString, isDarkMode)} overflow-hidden`}>
       {cloudPositions.map((cloud, i) => (
         <div
           key={i}
@@ -64,7 +65,7 @@ const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString }) => {
             top: `${cloud.top}%`,
           }}
         >
-          <Cloud className="w-16 h-16 text-white fill-white" />
+          <Cloud className={`w-16 h-16 ${isDarkMode ? 'text-gray-300' : 'text-white'} fill-current`} />
         </div>
       ))}
       <div 
@@ -75,7 +76,7 @@ const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString }) => {
         }}
       >
         {isNightTime(timeString) ? (
-          <Moon className="w-12 h-12 text-white fill-white" />
+          <Moon className={`w-12 h-12 ${isDarkMode ? 'text-gray-200' : 'text-white'} fill-current`} />
         ) : (
           <Sun className="w-12 h-12 text-yellow-300 fill-yellow-300" />
         )}
