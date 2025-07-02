@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import TimeZoneSearch from '../components/TimeZoneSearch';
 import TimeZoneCard from '../components/TimeZoneCard';
 import TimeZoneConverter from '../components/TimeZoneConverter';
 import SettingsPanel from '../components/SettingsPanel';
+import WorldMap from '../components/WorldMap';
 import { TIMEZONE_SUGGESTIONS } from '../data/timezones';
 
 interface Location {
@@ -25,6 +25,7 @@ const Index = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showWeather, setShowWeather] = useState(true);
   const [showConverter, setShowConverter] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -89,7 +90,7 @@ const Index = () => {
     <div className={`min-h-screen p-8 pt-12 transition-colors ${isDarkMode ? 'dark bg-gray-900 text-white' : 'bg-white'}`}>
       <div className="max-w-6xl mx-auto">
         <h1 className="text-2xl font-medium text-center mb-1">WORLD TIME WINDOWS</h1>
-        <p className="text-sm text-gray-600 text-center mb-8">made by <a href="https://x.com/pau_wee_" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900">@pau_wee_</a></p>
+        <p className="text-sm text-gray-600 text-center mb-8">made by <a href="https://x.com/sb_creations" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900">@sb_creations</a></p>
         
         <SettingsPanel
           is24Hour={is24Hour}
@@ -100,17 +101,33 @@ const Index = () => {
           onToggleWeather={setShowWeather}
         />
 
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center gap-4 mb-6">
           <button
             onClick={() => setShowConverter(!showConverter)}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             {showConverter ? 'Hide' : 'Show'} Time Converter
           </button>
+          
+          <button
+            onClick={() => setShowMap(!showMap)}
+            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+          >
+            {showMap ? 'Hide' : 'Show'} World Map
+          </button>
         </div>
 
         {showConverter && (
           <TimeZoneConverter currentTime={currentTime} />
+        )}
+
+        {showMap && (
+          <WorldMap 
+            locations={locations}
+            currentTime={currentTime}
+            is24Hour={is24Hour}
+            isDarkMode={isDarkMode}
+          />
         )}
         
         <TimeZoneSearch onAddLocation={handleAddLocation} />
