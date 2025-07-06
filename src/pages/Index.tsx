@@ -8,6 +8,8 @@ import { TIMEZONE_SUGGESTIONS } from '../data/timezones';
 import TimeTravelSlider from '../components/TimeTravelSlider';
 import NotificationManager from '../components/NotificationManager';
 import InteractiveGlobe from '../components/InteractiveGlobe';
+import NotificationBell from '../components/NotificationBell';
+import NotificationDemo from '../components/NotificationDemo';
 import { useOfflineSupport } from '../hooks/useOfflineSupport';
 
 interface Location {
@@ -105,7 +107,13 @@ const Index = () => {
   return (
     <div className={`min-h-screen p-8 pt-12 transition-colors ${isDarkMode ? 'dark bg-gray-900 text-white' : 'bg-white'}`}>
       <div className="mx-auto">
-        <h1 className="text-2xl font-medium text-center mb-1">WORLD TIME WINDOWS</h1>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex-1"></div>
+          <h1 className="text-2xl font-medium text-center">WORLD TIME WINDOWS</h1>
+          <div className="flex-1 flex justify-end">
+            <NotificationBell isDarkMode={isDarkMode} />
+          </div>
+        </div>
         <p className="text-sm text-gray-600 text-center mb-8">made by <a href="https://x.com/sb_creations" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900">@sb_creations</a></p>
         
         {/* Offline indicator */}
@@ -114,6 +122,8 @@ const Index = () => {
             📱 You're offline. Showing cached times.
           </div>
         )}
+
+        <NotificationDemo isDarkMode={isDarkMode} />
         
         <SettingsPanel
           is24Hour={is24Hour}
