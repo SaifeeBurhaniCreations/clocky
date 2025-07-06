@@ -25,7 +25,7 @@ const Index = () => {
     { name: 'Tokyo', timeZone: 'Asia/Tokyo' },
   ]);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [is24Hour, setIs24Hour] = useState(true);
+  const [is24Hour, setIs24Hour] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showWeather, setShowWeather] = useState(true);
   const [showConverter, setShowConverter] = useState(false);

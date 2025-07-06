@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Button } from './ui/button';
-import { Trash, ArrowUp, ArrowDown, Edit, Check, X, Star, StarIcon } from 'lucide-react';
+import { Trash, ArrowUp, ArrowDown, Edit, Check, X, Star, StarIcon, ThermometerIcon } from 'lucide-react';
 import { getProgressBarColor } from '../utils/timeUtils';
-
+import { getWeatherIcons } from '@/utils/weatherIcons';
 interface WeatherData {
   temperature: number;
   description: string;
@@ -14,6 +14,8 @@ interface WeatherData {
 
 interface TimeDisplayProps {
   timeString: string;
+  timeZone: string;
+  currentTime: Date;
   dateString: string;
   location: string;
   originalLocation: string;
@@ -39,6 +41,8 @@ interface TimeDisplayProps {
 const TimeDisplay: React.FC<TimeDisplayProps> = ({
   timeString,
   dateString,
+  timeZone,
+  currentTime,
   location,
   originalLocation,
   dayProgress,
@@ -59,6 +63,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
   isLast,
   isDarkMode
 }) => {
+  const { Icon, color } = getWeatherIcons(weather?.description);
   return (
     <div className={`p-4 space-y-3 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}`}>
       <div className="flex justify-between items-start">
@@ -143,12 +148,19 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
       {weather && (
         <div className={`flex items-center justify-between text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
           <div className="flex items-center gap-2">
-            <span>🌤️</span>
+            <span> <ThermometerIcon size={16} color="#ef4444" strokeWidth={1.5} /> </span>
             <span>{weather.temperature}°C</span>
-            <span className="capitalize">{weather.description}</span>
           </div>
           <div className="text-xs">
             ☀️ {weather.sunrise} | 🌙 {weather.sunset}
+          </div>
+        </div>
+      )}
+      {weather && (
+        <div className={`flex items-center justify-between text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+           <div className="flex items-center gap-2">
+            <span> <Icon size={18} color={color} strokeWidth={1.5} /> </span>
+            <span className="capitalize">{weather.description}</span>
           </div>
         </div>
       )}
@@ -161,7 +173,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
       
       <div className={`w-full h-1 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
         <div 
-          className={`h-full transition-all duration-1000 ${getProgressBarColor(timeString)}`}
+          className={`h-full transition-all duration-1000 ${getProgressBarColor(currentTime, timeZone, isDarkMode)}`}
           style={{ width: `${dayProgress}%` }}
         />
       </div>

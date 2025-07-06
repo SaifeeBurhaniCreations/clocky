@@ -1,10 +1,10 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { Cloud, Sun, Moon } from 'lucide-react';
 import { isNightTime, getSkyGradient, getSunMoonPosition } from '../utils/timeUtils';
 
 interface SkyBackgroundProps {
-  timeString: string;
+  currentTime: Date;
+  timeZone: string;
   isDarkMode?: boolean;
 }
 
@@ -15,7 +15,7 @@ interface CloudPosition {
   direction: number;
 }
 
-const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString, isDarkMode = false }) => {
+const SkyBackground: React.FC<SkyBackgroundProps> = ({ currentTime, timeZone, isDarkMode = false }) => {
   const [cloudPositions, setCloudPositions] = useState<CloudPosition[]>(() => {
     const numClouds = Math.floor(Math.random() * 3) + 2;
     return Array(numClouds).fill(null).map(() => ({
@@ -27,8 +27,8 @@ const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString, isDarkMode = 
   });
 
   const updateCloudPositions = useCallback(() => {
-    setCloudPositions(prevPositions => 
-      prevPositions.map(cloud => {
+    setCloudPositions(prev =>
+      prev.map(cloud => {
         let newLeft = cloud.left + (cloud.speed * cloud.direction);
         let newDirection = cloud.direction;
 
@@ -40,11 +40,7 @@ const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString, isDarkMode = 
           newDirection = -1;
         }
 
-        return {
-          ...cloud,
-          left: newLeft,
-          direction: newDirection
-        };
+        return { ...cloud, left: newLeft, direction: newDirection };
       })
     );
   }, []);
@@ -54,28 +50,30 @@ const SkyBackground: React.FC<SkyBackgroundProps> = ({ timeString, isDarkMode = 
     return () => clearInterval(interval);
   }, [updateCloudPositions]);
 
+  const skyGradient = getSkyGradient(currentTime, timeZone, isDarkMode);
+  const sunMoonTop = getSunMoonPosition(currentTime, timeZone);
+  const isNight = isNightTime(currentTime, timeZone);
+
   return (
-    <div className={`relative w-full aspect-square ${getSkyGradient(timeString, isDarkMode)} overflow-hidden`}>
+    <div className={`relative w-full aspect-square ${skyGradient} overflow-hidden`}>
       {cloudPositions.map((cloud, i) => (
         <div
           key={i}
           className="absolute transition-all duration-[3000ms] ease-linear opacity-50"
-          style={{
-            left: `${cloud.left}%`,
-            top: `${cloud.top}%`,
-          }}
+          style={{ left: `${cloud.left}%`, top: `${cloud.top}%` }}
         >
           <Cloud className={`w-16 h-16 ${isDarkMode ? 'text-gray-300' : 'text-white'} fill-current`} />
         </div>
       ))}
-      <div 
+
+      <div
         className="absolute transform -translate-x-1/2"
         style={{
           left: '50%',
-          top: getSunMoonPosition(timeString),
+          top: sunMoonTop
         }}
       >
-        {isNightTime(timeString) ? (
+        {isNight ? (
           <Moon className={`w-12 h-12 ${isDarkMode ? 'text-gray-200' : 'text-white'} fill-current`} />
         ) : (
           <Sun className="w-12 h-12 text-yellow-300 fill-yellow-300" />

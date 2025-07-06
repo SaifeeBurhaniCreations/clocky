@@ -49,7 +49,7 @@ const TimeZoneCard: React.FC<TimeZoneCardProps> = ({
   
   const timeString = getTimeInZone(currentTime, timeZone, is24Hour);
   const dateString = getDateInZone(currentTime, timeZone);
-  const progress = getDayProgress(timeString);
+  const progress = getDayProgress(currentTime, timeZone);
   const { weather, loading: weatherLoading } = useWeather(originalLocation, showWeather);
 
   const handleSaveEdit = () => {
@@ -64,9 +64,11 @@ const TimeZoneCard: React.FC<TimeZoneCardProps> = ({
 
   return (
     <div className={`w-full max-w-xs ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg overflow-hidden shadow-lg`}>
-      <SkyBackground timeString={timeString} isDarkMode={isDarkMode} />
+      <SkyBackground currentTime={new Date()} timeZone={timeZone} isDarkMode={isDarkMode} />
       <TimeDisplay
         timeString={timeString}
+        currentTime={currentTime}
+        timeZone={timeZone}
         dateString={dateString}
         location={location}
         originalLocation={originalLocation}
