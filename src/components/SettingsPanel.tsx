@@ -6,6 +6,7 @@ import { Switch } from './ui/switch';
 import { Settings, Sun, Moon, Clock } from 'lucide-react';
 
 interface SettingsPanelProps {
+  className: string;
   is24Hour: boolean;
   onToggle24Hour: (value: boolean) => void;
   isDarkMode: boolean;
@@ -15,6 +16,7 @@ interface SettingsPanelProps {
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({
+  className,
   is24Hour,
   onToggle24Hour,
   isDarkMode,
@@ -23,7 +25,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onToggleWeather
 }) => {
   return (
-    <Card className="p-4 mb-6">
+    <Card className={`p-4 mb-6 ${className}`}>
       <div className="flex items-center gap-2 mb-4">
         <Settings className="h-5 w-5" />
         <h3 className="text-lg font-semibold">Settings</h3>

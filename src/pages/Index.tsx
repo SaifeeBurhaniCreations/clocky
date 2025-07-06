@@ -19,10 +19,10 @@ interface Location {
 
 const Index = () => {
   const [locations, setLocations] = useState<Location[]>([
+    { name: 'Mumbai', timeZone: 'Asia/Kolkata' },
     { name: 'New York', timeZone: 'America/New_York' },
     { name: 'London', timeZone: 'Europe/London' },
     { name: 'Tokyo', timeZone: 'Asia/Tokyo' },
-    { name: 'New Zealand', timeZone: 'Pacific/Auckland' }
   ]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [is24Hour, setIs24Hour] = useState(true);
@@ -104,7 +104,7 @@ const Index = () => {
 
   return (
     <div className={`min-h-screen p-8 pt-12 transition-colors ${isDarkMode ? 'dark bg-gray-900 text-white' : 'bg-white'}`}>
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto">
         <h1 className="text-2xl font-medium text-center mb-1">WORLD TIME WINDOWS</h1>
         <p className="text-sm text-gray-600 text-center mb-8">made by <a href="https://x.com/sb_creations" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900">@sb_creations</a></p>
         
@@ -122,9 +122,10 @@ const Index = () => {
           onToggleDarkMode={setIsDarkMode}
           showWeather={showWeather}
           onToggleWeather={setShowWeather}
+          className="max-w-4xl mx-auto"
         />
 
-        <div className="flex justify-center gap-2 mb-6 flex-wrap">
+        <div className="flex justify-center gap-2 mb-6 flex-wrap ">
           <button
             onClick={() => setShowConverter(!showConverter)}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -132,12 +133,12 @@ const Index = () => {
             {showConverter ? 'Hide' : 'Show'} Time Converter
           </button>
           
-          <button
+          {/* <button
             onClick={() => setShowMap(!showMap)}
             className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
           >
             {showMap ? 'Hide' : 'Show'} World Map
-          </button>
+          </button> */}
 
           <button
             onClick={() => setShowGlobe(!showGlobe)}
@@ -148,7 +149,7 @@ const Index = () => {
 
           <button
             onClick={() => setShowTimeTravel(!showTimeTravel)}
-            className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-orange-600 transition-colors"
           >
             {showTimeTravel ? 'Hide' : 'Show'} Time Travel
           </button>
