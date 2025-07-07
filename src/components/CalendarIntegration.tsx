@@ -184,7 +184,7 @@ END:VCALENDAR`;
           <Button
             onClick={exportToGoogleCalendar}
             disabled={!meetingTitle || !meetingDate || !meetingTime}
-            className="bg-blue-500 hover:bg-blue-600"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
           >
             <Users className="h-4 w-4 mr-2" />
             Add to Google Calendar
@@ -192,7 +192,7 @@ END:VCALENDAR`;
           <Button
             onClick={exportToOutlook}
             disabled={!meetingTitle || !meetingDate || !meetingTime}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Users className="h-4 w-4 mr-2" />
             Add to Outlook

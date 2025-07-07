@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import { NotificationProvider } from "./contexts/NotificationContext";
+import WidgetPage from "./pages/WidgetPage";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/widget" element={<WidgetPage />} />
         </Routes>
       </BrowserRouter>
     </NotificationProvider>

@@ -119,7 +119,7 @@ const DataExport: React.FC<DataExportProps> = ({ locations, currentTime, is24Hou
           <Button
             onClick={exportAsCSV}
             disabled={locations.length === 0}
-            className="bg-green-500 hover:bg-green-600"
+            className="bg-green-500 hover:bg-green-600 text-white"
           >
             <FileText className="h-4 w-4 mr-2" />
             Export as CSV
@@ -127,7 +127,7 @@ const DataExport: React.FC<DataExportProps> = ({ locations, currentTime, is24Hou
           <Button
             onClick={exportAsJSON}
             disabled={locations.length === 0}
-            className="bg-blue-500 hover:bg-blue-600"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
           >
             <FileText className="h-4 w-4 mr-2" />
             Export as JSON

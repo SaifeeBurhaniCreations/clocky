@@ -42,12 +42,12 @@ const notificationReducer = (state: NotificationState, action: NotificationActio
         notifications: state.notifications.map(n => ({ ...n, isRead: true })),
         unreadCount: 0,
       };
-    case 'DISMISS_NOTIFICATION':
-      const notification = state.notifications.find(n => n.id === action.payload);
-      return {
-        notifications: state.notifications.filter(n => n.id !== action.payload),
-        unreadCount: notification && !notification.isRead ? state.unreadCount - 1 : state.unreadCount,
-      };
+      case 'DISMISS_NOTIFICATION':
+        const notification = state.notifications.find(n => n.id === action.payload);
+        return {
+          notifications: state.notifications.filter(n => n.id !== action.payload),
+          unreadCount: notification && !notification.isRead ? state.unreadCount - 1 : state.unreadCount,
+        };
     case 'CLEAR_ALL':
       return {
         notifications: [],
@@ -65,6 +65,8 @@ const notificationReducer = (state: NotificationState, action: NotificationActio
 
 interface NotificationContextType {
   state: NotificationState;
+  notifications: Notification[];   
+  unreadCount: number;     
   addNotification: (notification: Omit<Notification, 'id'>) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -161,6 +163,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     <NotificationContext.Provider
       value={{
         state,
+        notifications: state.notifications,
+        unreadCount: state.notifications.filter(n => !n.isRead).length,
         addNotification,
         markAsRead,
         markAllAsRead,

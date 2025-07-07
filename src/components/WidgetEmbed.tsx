@@ -23,7 +23,7 @@ interface WidgetEmbedProps {
 const WidgetEmbed: React.FC<WidgetEmbedProps> = ({ locations, isDarkMode }) => {
   const [widgetTheme, setWidgetTheme] = useState<'light' | 'dark'>('light');
   const [showWeather, setShowWeather] = useState(false);
-  const [is24Hour, setIs24Hour] = useState(true);
+  const [is24Hour, setIs24Hour] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState<string[]>(
     locations.slice(0, 4).map(l => l.timeZone)
   );

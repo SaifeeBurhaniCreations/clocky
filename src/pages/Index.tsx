@@ -143,7 +143,7 @@ const Index = () => {
           className="max-w-4xl mx-auto"
         />
 
-        <div className="flex justify-center gap-2 mb-6 flex-wrap">
+        <div className="flex justify-center gap-2 mb-6 flex-wrap  mx-auto max-w-4xl">
           <button
             onClick={() => setShowConverter(!showConverter)}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
