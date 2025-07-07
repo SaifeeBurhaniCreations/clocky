@@ -1,9 +1,9 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, CheckCircle, AlertTriangle, Info, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, X, CheckCircle, AlertTriangle, Info, AlertCircle, CheckCheck, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Card } from './ui/card';
+// import { Card } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useNotifications } from '../contexts/NotificationContext';
 
@@ -147,23 +147,23 @@ const NotificationBell: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => 
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
               <h3 className="text-lg font-semibold">Notifications</h3>
-              {unreadCount > 0 && (
+              {/* {unreadCount > 0 && (
                 <Badge variant="secondary" className="text-xs">
                   {unreadCount} new
                 </Badge>
-              )}
+              )} */}
             </div>
-            <div className="flex gap-2">
-              {unreadCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-                  Mark all read
-                </Button>
-              )}
-              {notifications.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={clearAll}>
-                  Clear all
-                </Button>
-              )}
+            <div className="flex  ">
+            {unreadCount > 0 && 
+            <Button variant="ghost" size="icon" onClick={markAllAsRead}>
+            <CheckCheck className="w-5 h-5 text-green-600" />
+          </Button>
+             }
+            {notifications.length > 0 && 
+             <Button variant="ghost" size="icon" onClick={clearAll}>
+            <Trash2 className="w-5 h-5 text-red-500" />
+           </Button>
+             }
             </div>
           </div>
         </div>

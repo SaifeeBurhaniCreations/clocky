@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import TimeZoneSearch from '../components/TimeZoneSearch';
 import TimeZoneCard from '../components/TimeZoneCard';
 import TimeZoneConverter from '../components/TimeZoneConverter';
@@ -9,7 +9,7 @@ import TimeTravelSlider from '../components/TimeTravelSlider';
 import NotificationManager from '../components/NotificationManager';
 import InteractiveGlobe from '../components/InteractiveGlobe';
 import NotificationBell from '../components/NotificationBell';
-import NotificationDemo from '../components/NotificationDemo';
+// import NotificationDemo from '../components/NotificationDemo';
 import { useOfflineSupport } from '../hooks/useOfflineSupport';
 
 interface Location {
@@ -20,23 +20,31 @@ interface Location {
 }
 
 const Index = () => {
-  const [locations, setLocations] = useState<Location[]>([
-    { name: 'Mumbai', timeZone: 'Asia/Kolkata' },
-    { name: 'New York', timeZone: 'America/New_York' },
-    { name: 'London', timeZone: 'Europe/London' },
-    { name: 'Tokyo', timeZone: 'Asia/Tokyo' },
-  ]);
+  const [locations, setLocations] = useState<Location[]>(() => {
+    const stored = localStorage.getItem("timezone-locations");
+    return stored ? JSON.parse(stored) : [
+      { name: 'Mumbai', timeZone: 'Asia/Calcutta' },
+      { name: 'New York', timeZone: 'America/New_York' },
+      { name: 'London', timeZone: 'Europe/London' },
+      { name: 'Tokyo', timeZone: 'Asia/Tokyo' },
+    ];
+  });
+  
   const [currentTime, setCurrentTime] = useState(new Date());
   const [is24Hour, setIs24Hour] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showWeather, setShowWeather] = useState(true);
   const [showConverter, setShowConverter] = useState(false);
-  const [showMap, setShowMap] = useState(false);
+  const [showMap, lov] = useState(false);
   const [showTimeTravel, setShowTimeTravel] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showGlobe, setShowGlobe] = useState(false);
   
   const { isOnline, cacheTimes, getCachedTime } = useOfflineSupport();
+
+  useEffect(() => {
+    localStorage.setItem("timezone-locations", JSON.stringify(locations));
+  }, [locations]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -65,10 +73,10 @@ const Index = () => {
   const handleAddLocation = (location: string) => {
     const cityData = TIMEZONE_SUGGESTIONS.find(item => item.city === location);
     if (cityData) {
-      setLocations([...locations, { 
+      setLocations([{ 
         name: location, 
         timeZone: cityData.timezone 
-      }]);
+      }, ...locations]);
     }
   };
 
@@ -119,11 +127,11 @@ const Index = () => {
         {/* Offline indicator */}
         {!isOnline && (
           <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg text-center">
-            📱 You're offline. Showing cached times.
+            📱 You're offline. Showing cached data.
           </div>
         )}
 
-        <NotificationDemo isDarkMode={isDarkMode} />
+        {/* <NotificationDemo isDarkMode={isDarkMode} /> */}
         
         <SettingsPanel
           is24Hour={is24Hour}
@@ -144,7 +152,7 @@ const Index = () => {
           </button>
           
           {/* <button
-            onClick={() => setShowMap(!showMap)}
+            onClick={() => lov(!showMap)}
             className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
           >
             {showMap ? 'Hide' : 'Show'} World Map
@@ -159,7 +167,7 @@ const Index = () => {
 
           <button
             onClick={() => setShowTimeTravel(!showTimeTravel)}
-            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
           >
             {showTimeTravel ? 'Hide' : 'Show'} Time Travel
           </button>

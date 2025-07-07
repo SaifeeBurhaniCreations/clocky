@@ -91,3 +91,10 @@ export const getSunMoonPosition = (date: Date, timeZone: string) => {
   const percentage = (totalMinutes / (24 * 60)) * 100;
   return `${Math.min(Math.max(percentage, 10), 90)}%`;
 };
+
+export const getCurrentTimeString = (): string => {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
