@@ -9,7 +9,9 @@ import TimeTravelSlider from '../components/TimeTravelSlider';
 import NotificationManager from '../components/NotificationManager';
 import InteractiveGlobe from '../components/InteractiveGlobe';
 import NotificationBell from '../components/NotificationBell';
-// import NotificationDemo from '../components/NotificationDemo';
+import CalendarIntegration from '../components/CalendarIntegration';
+import DataExport from '../components/DataExport';
+import WidgetEmbed from '../components/WidgetEmbed';
 import { useOfflineSupport } from '../hooks/useOfflineSupport';
 
 interface Location {
@@ -35,10 +37,13 @@ const Index = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showWeather, setShowWeather] = useState(true);
   const [showConverter, setShowConverter] = useState(false);
-  const [showMap, lov] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [showTimeTravel, setShowTimeTravel] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showGlobe, setShowGlobe] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [showWidget, setShowWidget] = useState(false);
   
   const { isOnline, cacheTimes, getCachedTime } = useOfflineSupport();
 
@@ -54,7 +59,6 @@ const Index = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Apply dark mode to document
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -63,7 +67,6 @@ const Index = () => {
     }
   }, [isDarkMode]);
 
-  // Cache times when online
   useEffect(() => {
     if (isOnline) {
       cacheTimes(locations);
@@ -124,14 +127,11 @@ const Index = () => {
         </div>
         <p className="text-sm text-gray-600 text-center mb-8">made by <a href="https://x.com/sb_creations" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900">@sb_creations</a></p>
         
-        {/* Offline indicator */}
         {!isOnline && (
           <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg text-center">
             📱 You're offline. Showing cached data.
           </div>
         )}
-
-        {/* <NotificationDemo isDarkMode={isDarkMode} /> */}
         
         <SettingsPanel
           is24Hour={is24Hour}
@@ -143,7 +143,7 @@ const Index = () => {
           className="max-w-4xl mx-auto"
         />
 
-        <div className="flex justify-center gap-2 mb-6 flex-wrap ">
+        <div className="flex justify-center gap-2 mb-6 flex-wrap">
           <button
             onClick={() => setShowConverter(!showConverter)}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -151,13 +151,6 @@ const Index = () => {
             {showConverter ? 'Hide' : 'Show'} Time Converter
           </button>
           
-          {/* <button
-            onClick={() => lov(!showMap)}
-            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-          >
-            {showMap ? 'Hide' : 'Show'} World Map
-          </button> */}
-
           <button
             onClick={() => setShowGlobe(!showGlobe)}
             className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors"
@@ -177,6 +170,27 @@ const Index = () => {
             className="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
           >
             {showNotifications ? 'Hide' : 'Show'} Notifications
+          </button>
+
+          <button
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors"
+          >
+            {showCalendar ? 'Hide' : 'Show'} Calendar
+          </button>
+
+          <button
+            onClick={() => setShowExport(!showExport)}
+            className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
+          >
+            {showExport ? 'Hide' : 'Show'} Export Data
+          </button>
+
+          <button
+            onClick={() => setShowWidget(!showWidget)}
+            className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors"
+          >
+            {showWidget ? 'Hide' : 'Show'} Widget/Embed
           </button>
         </div>
 
@@ -213,6 +227,29 @@ const Index = () => {
 
         {showNotifications && (
           <NotificationManager
+            locations={locations}
+            isDarkMode={isDarkMode}
+          />
+        )}
+
+        {showCalendar && (
+          <CalendarIntegration
+            locations={locations}
+            isDarkMode={isDarkMode}
+          />
+        )}
+
+        {showExport && (
+          <DataExport
+            locations={locations}
+            currentTime={currentTime}
+            is24Hour={is24Hour}
+            isDarkMode={isDarkMode}
+          />
+        )}
+
+        {showWidget && (
+          <WidgetEmbed
             locations={locations}
             isDarkMode={isDarkMode}
           />

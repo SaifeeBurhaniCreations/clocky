@@ -1,278 +1,182 @@
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 
 export interface Notification {
   id: string;
   title: string;
   description: string;
   timestamp: Date;
+  isRead: boolean;
   icon?: string;
-  read: boolean;
-  type?: 'info' | 'warning' | 'success' | 'error';
 }
 
-interface NotificationContextType {
+interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
+}
+
+type NotificationAction =
+  | { type: 'ADD_NOTIFICATION'; payload: Notification }
+  | { type: 'MARK_AS_READ'; payload: string }
+  | { type: 'MARK_ALL_AS_READ' }
+  | { type: 'DISMISS_NOTIFICATION'; payload: string }
+  | { type: 'CLEAR_ALL' }
+  | { type: 'LOAD_NOTIFICATIONS'; payload: Notification[] };
+
+const notificationReducer = (state: NotificationState, action: NotificationAction): NotificationState => {
+  switch (action.type) {
+    case 'ADD_NOTIFICATION':
+      return {
+        notifications: [action.payload, ...state.notifications],
+        unreadCount: state.unreadCount + 1,
+      };
+    case 'MARK_AS_READ':
+      return {
+        notifications: state.notifications.map(n =>
+          n.id === action.payload ? { ...n, isRead: true } : n
+        ),
+        unreadCount: Math.max(0, state.unreadCount - 1),
+      };
+    case 'MARK_ALL_AS_READ':
+      return {
+        notifications: state.notifications.map(n => ({ ...n, isRead: true })),
+        unreadCount: 0,
+      };
+    case 'DISMISS_NOTIFICATION':
+      const notification = state.notifications.find(n => n.id === action.payload);
+      return {
+        notifications: state.notifications.filter(n => n.id !== action.payload),
+        unreadCount: notification && !notification.isRead ? state.unreadCount - 1 : state.unreadCount,
+      };
+    case 'CLEAR_ALL':
+      return {
+        notifications: [],
+        unreadCount: 0,
+      };
+    case 'LOAD_NOTIFICATIONS':
+      return {
+        notifications: action.payload,
+        unreadCount: action.payload.filter(n => !n.isRead).length,
+      };
+    default:
+      return state;
+  }
+};
+
+interface NotificationContextType {
+  state: NotificationState;
+  addNotification: (notification: Omit<Notification, 'id'>) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   dismissNotification: (id: string) => void;
   clearAll: () => void;
-  simulateNotification: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error('useNotifications must be used within NotificationProvider');
-  }
-  return context;
-};
-
 const STORAGE_KEY = 'world-time-notifications';
-const BROADCAST_CHANNEL_NAME = 'notifications-sync';
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [broadcastChannel, setBroadcastChannel] = useState<BroadcastChannel | null>(null);
+export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(notificationReducer, {
+    notifications: [],
+    unreadCount: 0,
+  });
 
   // Load notifications from localStorage on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsedNotifications = JSON.parse(stored).map((notif: any) => ({
-          ...notif,
-          timestamp: new Date(notif.timestamp)
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const notifications = parsed.map((n: any) => ({
+          ...n,
+          timestamp: new Date(n.timestamp),
         }));
-        setNotifications(parsedNotifications);
+        dispatch({ type: 'LOAD_NOTIFICATIONS', payload: notifications });
+      } catch (error) {
+        console.error('Failed to load notifications:', error);
       }
-    } catch (error) {
-      console.error('Error loading notifications from localStorage:', error);
     }
   }, []);
 
-  // Initialize BroadcastChannel for cross-tab sync
+  // Save to localStorage whenever state changes
   useEffect(() => {
-    if ('BroadcastChannel' in window) {
-      const channel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
-      setBroadcastChannel(channel);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notifications));
+  }, [state.notifications]);
 
-      channel.onmessage = (event) => {
-        const { type, data } = event.data;
-        
-        switch (type) {
-          case 'NOTIFICATION_ADDED':
-            setNotifications(prev => {
-              const exists = prev.find(n => n.id === data.id);
-              if (exists) return prev;
-              return [data, ...prev];
-            });
-            break;
-          case 'NOTIFICATION_READ':
-            setNotifications(prev => 
-              prev.map(notif => 
-                notif.id === data.id ? { ...notif, read: true } : notif
-              )
-            );
-            break;
-          case 'NOTIFICATION_DISMISSED':
-            setNotifications(prev => prev.filter(notif => notif.id !== data.id));
-            break;
-          case 'ALL_READ':
-            setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
-            break;
-          case 'ALL_CLEARED':
-            setNotifications([]);
-            break;
+  // Cross-tab synchronization
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const notifications = JSON.parse(e.newValue).map((n: any) => ({
+            ...n,
+            timestamp: new Date(n.timestamp),
+          }));
+          dispatch({ type: 'LOAD_NOTIFICATIONS', payload: notifications });
+        } catch (error) {
+          console.error('Failed to sync notifications:', error);
         }
-      };
-
-      return () => {
-        channel.close();
-      };
-    } else {
-      // Fallback to storage event for cross-tab sync
-      const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === STORAGE_KEY && e.newValue) {
-          try {
-            const parsedNotifications = JSON.parse(e.newValue).map((notif: any) => ({
-              ...notif,
-              timestamp: new Date(notif.timestamp)
-            }));
-            setNotifications(parsedNotifications);
-          } catch (error) {
-            console.error('Error parsing notifications from storage event:', error);
-          }
-        }
-      };
-
-      window.addEventListener('storage', handleStorageChange);
-      return () => window.removeEventListener('storage', handleStorageChange);
-    }
-  }, []);
-
-  // Save to localStorage whenever notifications change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
-    } catch (error) {
-      console.error('Error saving notifications to localStorage:', error);
-    }
-  }, [notifications]);
-
-  const requestNotificationPermission = useCallback(async () => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      await Notification.requestPermission();
-    }
-  }, []);
-
-  // Request permission on first load
-  useEffect(() => {
-    requestNotificationPermission();
-  }, [requestNotificationPermission]);
-
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      timestamp: new Date(),
-      read: false,
+      }
     };
 
-    setNotifications(prev => [newNotification, ...prev]);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
-    // Send browser notification if permission granted
+  const addNotification = (notification: Omit<Notification, 'id'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: Date.now().toString(),
+    };
+
+    dispatch({ type: 'ADD_NOTIFICATION', payload: newNotification });
+
+    // Browser notification
     if ('Notification' in window && Notification.permission === 'granted') {
-      const browserNotification = new Notification(notification.title, {
+      new Notification(notification.title, {
         body: notification.description,
-        icon: notification.icon || '/placeholder.svg',
-        badge: '/placeholder.svg',
-        tag: newNotification.id,
-      });
-
-      // Auto-close after 5 seconds
-      setTimeout(() => {
-        browserNotification.close();
-      }, 5000);
-    }
-
-    // Broadcast to other tabs
-    if (broadcastChannel) {
-      broadcastChannel.postMessage({
-        type: 'NOTIFICATION_ADDED',
-        data: newNotification
+        icon: notification.icon || '/favicon.ico',
       });
     }
-  }, [broadcastChannel]);
+  };
 
-  const markAsRead = useCallback((id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
+  const markAsRead = (id: string) => {
+    dispatch({ type: 'MARK_AS_READ', payload: id });
+  };
 
-    // Broadcast to other tabs
-    if (broadcastChannel) {
-      broadcastChannel.postMessage({
-        type: 'NOTIFICATION_READ',
-        data: { id }
-      });
-    }
-  }, [broadcastChannel]);
+  const markAllAsRead = () => {
+    dispatch({ type: 'MARK_ALL_AS_READ' });
+  };
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+  const dismissNotification = (id: string) => {
+    dispatch({ type: 'DISMISS_NOTIFICATION', payload: id });
+  };
 
-    // Broadcast to other tabs
-    if (broadcastChannel) {
-      broadcastChannel.postMessage({
-        type: 'ALL_READ',
-        data: {}
-      });
-    }
-  }, [broadcastChannel]);
-
-  const dismissNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
-
-    // Broadcast to other tabs
-    if (broadcastChannel) {
-      broadcastChannel.postMessage({
-        type: 'NOTIFICATION_DISMISSED',
-        data: { id }
-      });
-    }
-  }, [broadcastChannel]);
-
-  const clearAll = useCallback(() => {
-    setNotifications([]);
-
-    // Broadcast to other tabs
-    if (broadcastChannel) {
-      broadcastChannel.postMessage({
-        type: 'ALL_CLEARED',
-        data: {}
-      });
-    }
-  }, [broadcastChannel]);
-
-  const simulateNotification = useCallback(() => {
-    const sampleNotifications = [
-      {
-        title: 'Weather Alert',
-        description: 'Heavy rain expected in Mumbai at 5 PM',
-        type: 'warning' as const,
-        icon: '🌧️'
-      },
-      {
-        title: 'Time Zone Added',
-        description: 'Successfully added Tokyo to your time zones',
-        type: 'success' as const,
-        icon: '🕒'
-      },
-      {
-        title: 'Meeting Reminder',
-        description: 'Your meeting starts in 15 minutes (New York time)',
-        type: 'info' as const,
-        icon: '📅'
-      },
-      {
-        title: 'System Update',
-        description: 'World Time Windows has been updated with new features',
-        type: 'info' as const,
-        icon: '🔄'
-      },
-      {
-        title: 'Offline Mode',
-        description: 'You are now offline. Showing cached data.',
-        type: 'error' as const,
-        icon: '📱'
-      }
-    ];
-
-    const randomNotification = sampleNotifications[Math.floor(Math.random() * sampleNotifications.length)];
-    addNotification(randomNotification);
-  }, [addNotification]);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const clearAll = () => {
+    dispatch({ type: 'CLEAR_ALL' });
+  };
 
   return (
-    <NotificationContext.Provider value={{
-      notifications,
-      unreadCount,
-      addNotification,
-      markAsRead,
-      markAllAsRead,
-      dismissNotification,
-      clearAll,
-      simulateNotification,
-    }}>
+    <NotificationContext.Provider
+      value={{
+        state,
+        addNotification,
+        markAsRead,
+        markAllAsRead,
+        dismissNotification,
+        clearAll,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );
+};
+
+export const useNotifications = () => {
+  const context = useContext(NotificationContext);
+  if (context === undefined) {
+    throw new Error('useNotifications must be used within a NotificationProvider');
+  }
+  return context;
 };
