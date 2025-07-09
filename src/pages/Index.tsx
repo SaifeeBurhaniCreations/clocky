@@ -13,6 +13,7 @@ import CalendarIntegration from '../components/CalendarIntegration';
 import DataExport from '../components/DataExport';
 import WidgetEmbed from '../components/WidgetEmbed';
 import { useOfflineSupport } from '../hooks/useOfflineSupport';
+import logo from '../assets/images/png/clocky-logo.png';
 
 interface Location {
   name: string;
@@ -116,10 +117,10 @@ const Index = () => {
   };
 
   return (
-    <div className={`min-h-screen p-8 pt-12 transition-colors ${isDarkMode ? 'dark bg-gray-900 text-white' : 'bg-white'}`}>
+    <div className={`min-h-screen p-8 pt-12 transition-colors ${isDarkMode && 'dark bg-gray-900 text-white'}`}>
       <div className="mx-auto">
         <div className="flex items-center justify-between mb-1">
-          <div className="flex-1"></div>
+          <div className="flex-1"><img className='w-[14rem]' src={logo} alt="" /></div>
           <h1 className="text-2xl font-medium text-center">WORLD TIME WINDOWS</h1>
           <div className="flex-1 flex justify-end">
             <NotificationBell isDarkMode={isDarkMode} />
@@ -140,7 +141,7 @@ const Index = () => {
           onToggleDarkMode={setIsDarkMode}
           showWeather={showWeather}
           onToggleWeather={setShowWeather}
-          className="max-w-4xl mx-auto"
+          className={`max-w-4xl ${isDarkMode ? 'bg-gray-900' : 'bg-white'} mx-auto`}
         />
 
         <div className="flex justify-center gap-2 mb-6 flex-wrap  mx-auto max-w-4xl">
